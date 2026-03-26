@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Tivals Editor | Auto‑Save & Restore</title>
+  <title>Tivals Editor | Capture & Feedback</title>
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- Google Fonts -->
@@ -55,13 +55,15 @@
     .bg-option label { display: flex; align-items: center; gap: 8px; }
     .audio-controls { display: flex; gap: 12px; margin: 12px 0; flex-wrap: wrap; }
     textarea { font-family: monospace; font-size: 0.8rem; }
+    .footer { text-align: center; padding: 12px; font-size: 0.7rem; color: #6c757d; border-top: 1px solid #2c2f36; margin-top: 8px; }
+    .footer a { color: #ff9966; text-decoration: none; }
   </style>
 </head>
 <body>
 <div class="app-container">
   <div class="editor-header">
     <span class="logo"><i class="fas fa-video"></i> Tivals Editor</span>
-    <span class="badge"><i class="fas fa-save"></i> Auto‑Save</span>
+    <span class="badge"><i class="fas fa-camera"></i> Capture + Feedback</span>
   </div>
 
   <!-- hidden video & image -->
@@ -203,11 +205,12 @@
     <div class="status-msg" style="margin-top:8px;">💡 How it works: 1. Upload audio 2. Click Play Audio 3. Immediately click Start Recording – the microphone will hear the audio from your speakers and transcribe it. Then click "Add as Auto‑Typing" to create a text layer with typewriter animation at the current timeline position.</div>
   </div>
 
-  <div id="statusMsg" class="status-msg">🎬 Tivals Editor – Text now appears instantly! Click "Add Text" to see it right away.</div>
+  <div id="statusMsg" class="status-msg">🎬 Tivals Editor – Capture frames & give feedback!</div>
   <div style="padding: 10px; text-align:center; display: flex; gap: 8px; justify-content: center;">
-    <button id="uploadBtn" class="ctrl-btn" style="background:#2f3542;"><i class="fas fa-plus-circle"></i> Import Media</button>
-    <button id="saveProjectBtn" class="ctrl-btn" style="background:#2f3542;"><i class="fas fa-save"></i> Save</button>
-    <button id="resetProjectBtn" class="ctrl-btn" style="background:#3a2c2c;"><i class="fas fa-trash"></i> Reset</button>
+    <button id="uploadBtn" class="ctrl-btn" style="background:#2f3542;"><i class="fas fa-plus-circle"></i></button>
+    <button id="captureImageBtn" class="ctrl-btn" style="background:#2f3542;"><i class="fas fa-camera"></i></button>
+    <button id="saveProjectBtn" class="ctrl-btn" style="background:#2f3542;"><i class="fas fa-save"></i></button>
+    <button id="resetProjectBtn" class="ctrl-btn" style="background:#3a2c2c;"><i class="fas fa-trash"></i></button>
   </div>
   <input type="file" id="mediaUpload" accept="video/*,image/*" style="display:none;">
 
@@ -220,6 +223,12 @@
     <button class="nav-item" data-nav="background" id="navBackgroundBtn"><i class="fas fa-image"></i><span>BG</span></button>
     <button class="nav-item" data-nav="audioToText" id="navAudioToTextBtn"><i class="fas fa-file-audio"></i><span>Audio→Text</span></button>
     <button class="nav-item" data-nav="export" id="navExportBtn"><i class="fas fa-download"></i><span>Export</span></button>
+    <button class="nav-item" id="feedbackBtn"><i class="fas fa-comment-dots"></i><span>Feedback</span></button>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Powered by <strong>TivalsDeveloper</strong> | <i class="fas fa-code"></i> Create. Edit. Inspire.
   </div>
 </div>
 
@@ -241,6 +250,7 @@
   const exportBtn = document.getElementById('quickExportBtn');
   const saveProjectBtn = document.getElementById('saveProjectBtn');
   const resetProjectBtn = document.getElementById('resetProjectBtn');
+  const captureImageBtn = document.getElementById('captureImageBtn');
 
   // ==================== Global State ====================
   let backgroundMode = 'video';
@@ -1134,6 +1144,12 @@
     setActiveNav('export');
   });
 
+  // Feedback button: open the specified URL
+  const feedbackBtn = document.getElementById('feedbackBtn');
+  feedbackBtn.addEventListener('click', () => {
+    window.open('https://tivalsdeveloper-oss.github.io/Game-fedback/', '_blank');
+  });
+
   document.getElementById('quickTextBtn').addEventListener('click', () => document.getElementById('navTextBtn').click());
   document.getElementById('quickAudioBtn').addEventListener('click', () => document.getElementById('navAudioBtn').click());
   document.getElementById('quickWatermarkBtn').addEventListener('click', () => document.getElementById('navWatermarkBtn').click());
@@ -1142,6 +1158,28 @@
     panelsMap.filter.classList.remove('hidden-panel');
     setActiveNav('editor');
   });
+
+  // ==================== Capture Image ====================
+  function captureImage() {
+    if (canvas.width === 0 || canvas.height === 0) {
+      statusDiv.innerHTML = '⚠️ No content to capture. Import a video or image first.';
+      return;
+    }
+    // Create a temporary canvas to capture exactly what is shown (including all layers)
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    // Draw the current canvas content (which already includes all layers, filters, watermark)
+    tempCtx.drawImage(canvas, 0, 0);
+    const link = document.createElement('a');
+    link.download = 'tivals_capture.png';
+    link.href = tempCanvas.toDataURL();
+    link.click();
+    statusDiv.innerHTML = '📸 Image captured and downloaded!';
+  }
+
+  captureImageBtn.addEventListener('click', captureImage);
 
   // ==================== SAVE & RESTORE STATE ====================
   const STORAGE_KEY = 'tivals_editor_state';
@@ -1257,7 +1295,7 @@
   setActiveNav('editor');
   updateTrimUI();
   loadProjectState(); // restore saved data
-  statusDiv.innerHTML = '🎬 Tivals Editor – Auto‑save active! Your work is saved automatically.';
+  statusDiv.innerHTML = '🎬 Tivals Editor – Capture frames & give feedback!';
 </script>
 </body>
 </html>
